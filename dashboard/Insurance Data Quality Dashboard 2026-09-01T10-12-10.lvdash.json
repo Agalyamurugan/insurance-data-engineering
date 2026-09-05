@@ -1,0 +1,1316 @@
+{
+  "datasets": [
+    {
+      "name": "record_counts",
+      "displayName": "Record Counts by Table",
+      "queryLines": [
+        "SELECT\n",
+        "  'premium_summary' AS table_name,\n",
+        "  COUNT(*) AS record_count\n",
+        "FROM\n",
+        "  premium_summary\n",
+        "UNION ALL\n",
+        "SELECT\n",
+        "  'policy_performance',\n",
+        "  COUNT(*)\n",
+        "FROM\n",
+        "  policy_performance\n",
+        "UNION ALL\n",
+        "SELECT\n",
+        "  'customer_performance',\n",
+        "  COUNT(*)\n",
+        "FROM\n",
+        "  customer_performance\n",
+        "UNION ALL\n",
+        "SELECT\n",
+        "  'agent_performance',\n",
+        "  COUNT(*)\n",
+        "FROM\n",
+        "  agent_performance\n",
+        "UNION ALL\n",
+        "SELECT\n",
+        "  'policy_health',\n",
+        "  COUNT(*)\n",
+        "FROM\n",
+        "  policy_health\n",
+        "ORDER BY\n",
+        "  record_count DESC"
+      ],
+      "catalog": "workspace",
+      "schema": "insurance_gold"
+    },
+    {
+      "name": "completeness_metrics",
+      "displayName": "Data Completeness Metrics",
+      "queryLines": [
+        "SELECT\n",
+        "  'policy_health' AS table_name,\n",
+        "  'policy_id' AS field_name,\n",
+        "  ROUND(\n",
+        "    100.0\n",
+        "      * SUM(\n",
+        "        CASE\n",
+        "          WHEN policy_id IS NULL THEN 1\n",
+        "          ELSE 0\n",
+        "        END\n",
+        "      )\n",
+        "      / COUNT(*),\n",
+        "    2\n",
+        "  ) AS null_percentage\n",
+        "FROM\n",
+        "  policy_health\n",
+        "UNION ALL\n",
+        "SELECT\n",
+        "  'policy_health',\n",
+        "  'customer_id',\n",
+        "  ROUND(\n",
+        "    100.0\n",
+        "      * SUM(\n",
+        "        CASE\n",
+        "          WHEN customer_id IS NULL THEN 1\n",
+        "          ELSE 0\n",
+        "        END\n",
+        "      )\n",
+        "      / COUNT(*),\n",
+        "    2\n",
+        "  )\n",
+        "FROM\n",
+        "  policy_health\n",
+        "UNION ALL\n",
+        "SELECT\n",
+        "  'policy_health',\n",
+        "  'agent_id',\n",
+        "  ROUND(\n",
+        "    100.0\n",
+        "      * SUM(\n",
+        "        CASE\n",
+        "          WHEN agent_id IS NULL THEN 1\n",
+        "          ELSE 0\n",
+        "        END\n",
+        "      )\n",
+        "      / COUNT(*),\n",
+        "    2\n",
+        "  )\n",
+        "FROM\n",
+        "  policy_health\n",
+        "UNION ALL\n",
+        "SELECT\n",
+        "  'policy_health',\n",
+        "  'policy_status',\n",
+        "  ROUND(\n",
+        "    100.0\n",
+        "      * SUM(\n",
+        "        CASE\n",
+        "          WHEN policy_status IS NULL THEN 1\n",
+        "          ELSE 0\n",
+        "        END\n",
+        "      )\n",
+        "      / COUNT(*),\n",
+        "    2\n",
+        "  )\n",
+        "FROM\n",
+        "  policy_health\n",
+        "UNION ALL\n",
+        "SELECT\n",
+        "  'policy_health',\n",
+        "  'annual_premium',\n",
+        "  ROUND(\n",
+        "    100.0\n",
+        "      * SUM(\n",
+        "        CASE\n",
+        "          WHEN annual_premium IS NULL THEN 1\n",
+        "          ELSE 0\n",
+        "        END\n",
+        "      )\n",
+        "      / COUNT(*),\n",
+        "    2\n",
+        "  )\n",
+        "FROM\n",
+        "  policy_health\n",
+        "UNION ALL\n",
+        "SELECT\n",
+        "  'premium_summary',\n",
+        "  'payment_date',\n",
+        "  ROUND(\n",
+        "    100.0\n",
+        "      * SUM(\n",
+        "        CASE\n",
+        "          WHEN payment_date IS NULL THEN 1\n",
+        "          ELSE 0\n",
+        "        END\n",
+        "      )\n",
+        "      / COUNT(*),\n",
+        "    2\n",
+        "  )\n",
+        "FROM\n",
+        "  premium_summary\n",
+        "UNION ALL\n",
+        "SELECT\n",
+        "  'premium_summary',\n",
+        "  'total_premium_collected',\n",
+        "  ROUND(\n",
+        "    100.0\n",
+        "      * SUM(\n",
+        "        CASE\n",
+        "          WHEN total_premium_collected IS NULL THEN 1\n",
+        "          ELSE 0\n",
+        "        END\n",
+        "      )\n",
+        "      / COUNT(*),\n",
+        "    2\n",
+        "  )\n",
+        "FROM\n",
+        "  premium_summary\n",
+        "ORDER BY\n",
+        "  null_percentage DESC"
+      ],
+      "catalog": "workspace",
+      "schema": "insurance_gold"
+    },
+    {
+      "name": "data_freshness",
+      "displayName": "Data Freshness",
+      "queryLines": [
+        "SELECT\n",
+        "  'premium_summary' AS source_table,\n",
+        "  MAX(payment_date) AS latest_date,\n",
+        "  DATEDIFF(CURRENT_DATE(), MAX(payment_date)) AS days_since_update\n",
+        "FROM\n",
+        "  premium_summary\n",
+        "UNION ALL\n",
+        "SELECT\n",
+        "  'policy_health',\n",
+        "  MAX(policy_start_date),\n",
+        "  DATEDIFF(CURRENT_DATE(), MAX(policy_start_date))\n",
+        "FROM\n",
+        "  policy_health\n",
+        "ORDER BY\n",
+        "  days_since_update DESC"
+      ],
+      "catalog": "workspace",
+      "schema": "insurance_gold"
+    },
+    {
+      "name": "duplicate_detection",
+      "displayName": "Duplicate Detection",
+      "queryLines": [
+        "SELECT\n",
+        "  'policy_id in policy_health' AS check_type,\n",
+        "  COUNT(*) - COUNT(DISTINCT policy_id) AS duplicate_count\n",
+        "FROM\n",
+        "  policy_health\n",
+        "UNION ALL\n",
+        "SELECT\n",
+        "  'customer_id in customer_performance',\n",
+        "  COUNT(*) - COUNT(DISTINCT customer_id)\n",
+        "FROM\n",
+        "  customer_performance\n",
+        "UNION ALL\n",
+        "SELECT\n",
+        "  'agent_id in agent_performance',\n",
+        "  COUNT(*) - COUNT(DISTINCT agent_id)\n",
+        "FROM\n",
+        "  agent_performance\n",
+        "UNION ALL\n",
+        "SELECT\n",
+        "  'policy_id in policy_performance',\n",
+        "  COUNT(*) - COUNT(DISTINCT policy_id)\n",
+        "FROM\n",
+        "  policy_performance\n",
+        "ORDER BY\n",
+        "  duplicate_count DESC"
+      ],
+      "catalog": "workspace",
+      "schema": "insurance_gold"
+    },
+    {
+      "name": "value_quality",
+      "displayName": "Value Quality Checks",
+      "queryLines": [
+        "SELECT\n",
+        "  'Negative Premium' AS quality_issue,\n",
+        "  COUNT(*) AS issue_count\n",
+        "FROM\n",
+        "  policy_health\n",
+        "WHERE\n",
+        "  annual_premium < 0\n",
+        "UNION ALL\n",
+        "SELECT\n",
+        "  'Zero Premium',\n",
+        "  COUNT(*)\n",
+        "FROM\n",
+        "  policy_health\n",
+        "WHERE\n",
+        "  annual_premium = 0\n",
+        "UNION ALL\n",
+        "SELECT\n",
+        "  'Negative Outstanding',\n",
+        "  COUNT(*)\n",
+        "FROM\n",
+        "  policy_health\n",
+        "WHERE\n",
+        "  outstanding_premium < 0\n",
+        "UNION ALL\n",
+        "SELECT\n",
+        "  'Outlier Premium (>1M)',\n",
+        "  COUNT(*)\n",
+        "FROM\n",
+        "  policy_health\n",
+        "WHERE\n",
+        "  annual_premium > 1000000\n",
+        "UNION ALL\n",
+        "SELECT\n",
+        "  'Invalid Policy Status',\n",
+        "  COUNT(*)\n",
+        "FROM\n",
+        "  policy_health\n",
+        "WHERE\n",
+        "  policy_status NOT IN ('Active', 'Lapsed', 'Surrendered', 'Matured', 'Expired')\n",
+        "ORDER BY\n",
+        "  issue_count DESC"
+      ],
+      "catalog": "workspace",
+      "schema": "insurance_gold"
+    },
+    {
+      "name": "daily_trends",
+      "displayName": "Daily Premium Trends",
+      "queryLines": [
+        "SELECT\n",
+        "  payment_date,\n",
+        "  total_premium_collected,\n",
+        "  total_payments,\n",
+        "  total_policies\n",
+        "FROM\n",
+        "  premium_summary\n",
+        "WHERE\n",
+        "  payment_date >= DATE_SUB(CURRENT_DATE(), 90)\n",
+        "ORDER BY\n",
+        "  payment_date DESC"
+      ],
+      "catalog": "workspace",
+      "schema": "insurance_gold"
+    },
+    {
+      "name": "summary_metrics",
+      "displayName": "Summary Metrics",
+      "queryLines": [
+        "SELECT\n",
+        "  (\n",
+        "    SELECT\n",
+        "      SUM(record_count)\n",
+        "    FROM\n",
+        "      (\n",
+        "        SELECT\n",
+        "          COUNT(*) as record_count\n",
+        "        FROM\n",
+        "          premium_summary\n",
+        "        UNION ALL\n",
+        "        SELECT\n",
+        "          COUNT(*)\n",
+        "        FROM\n",
+        "          policy_performance\n",
+        "        UNION ALL\n",
+        "        SELECT\n",
+        "          COUNT(*)\n",
+        "        FROM\n",
+        "          customer_performance\n",
+        "        UNION ALL\n",
+        "        SELECT\n",
+        "          COUNT(*)\n",
+        "        FROM\n",
+        "          agent_performance\n",
+        "        UNION ALL\n",
+        "        SELECT\n",
+        "          COUNT(*)\n",
+        "        FROM\n",
+        "          policy_health\n",
+        "      )\n",
+        "  ) AS total_records,\n",
+        "  (\n",
+        "    SELECT\n",
+        "      AVG(days_since_update)\n",
+        "    FROM\n",
+        "      (\n",
+        "        SELECT\n",
+        "          DATEDIFF(CURRENT_DATE(), MAX(payment_date)) as days_since_update\n",
+        "        FROM\n",
+        "          premium_summary\n",
+        "        UNION ALL\n",
+        "        SELECT\n",
+        "          DATEDIFF(CURRENT_DATE(), MAX(policy_start_date))\n",
+        "        FROM\n",
+        "          policy_health\n",
+        "      )\n",
+        "  ) AS avg_data_age_days,\n",
+        "  (\n",
+        "    SELECT\n",
+        "      SUM(duplicate_count)\n",
+        "    FROM\n",
+        "      (\n",
+        "        SELECT\n",
+        "          COUNT(*) - COUNT(DISTINCT policy_id) AS duplicate_count\n",
+        "        FROM\n",
+        "          policy_health\n",
+        "        UNION ALL\n",
+        "        SELECT\n",
+        "          COUNT(*) - COUNT(DISTINCT customer_id)\n",
+        "        FROM\n",
+        "          customer_performance\n",
+        "        UNION ALL\n",
+        "        SELECT\n",
+        "          COUNT(*) - COUNT(DISTINCT agent_id)\n",
+        "        FROM\n",
+        "          agent_performance\n",
+        "        UNION ALL\n",
+        "        SELECT\n",
+        "          COUNT(*) - COUNT(DISTINCT policy_id)\n",
+        "        FROM\n",
+        "          policy_performance\n",
+        "      )\n",
+        "  ) AS total_duplicates,\n",
+        "  (\n",
+        "    SELECT\n",
+        "      SUM(issue_count)\n",
+        "    FROM\n",
+        "      (\n",
+        "        SELECT\n",
+        "          COUNT(*) AS issue_count\n",
+        "        FROM\n",
+        "          policy_health\n",
+        "        WHERE\n",
+        "          annual_premium < 0\n",
+        "        UNION ALL\n",
+        "        SELECT\n",
+        "          COUNT(*)\n",
+        "        FROM\n",
+        "          policy_health\n",
+        "        WHERE\n",
+        "          annual_premium = 0\n",
+        "        UNION ALL\n",
+        "        SELECT\n",
+        "          COUNT(*)\n",
+        "        FROM\n",
+        "          policy_health\n",
+        "        WHERE\n",
+        "          outstanding_premium < 0\n",
+        "        UNION ALL\n",
+        "        SELECT\n",
+        "          COUNT(*)\n",
+        "        FROM\n",
+        "          policy_health\n",
+        "        WHERE\n",
+        "          annual_premium > 1000000\n",
+        "        UNION ALL\n",
+        "        SELECT\n",
+        "          COUNT(*)\n",
+        "        FROM\n",
+        "          policy_health\n",
+        "        WHERE\n",
+        "          policy_status NOT IN ('Active', 'Lapsed', 'Surrendered', 'Matured', 'Expired')\n",
+        "      )\n",
+        "  ) AS total_quality_issues,\n",
+        "  (\n",
+        "    SELECT\n",
+        "      MAX(null_percentage)\n",
+        "    FROM\n",
+        "      (\n",
+        "        SELECT\n",
+        "          ROUND(\n",
+        "            100.0\n",
+        "              * SUM(\n",
+        "                CASE\n",
+        "                  WHEN policy_id IS NULL THEN 1\n",
+        "                  ELSE 0\n",
+        "                END\n",
+        "              )\n",
+        "              / COUNT(*),\n",
+        "            2\n",
+        "          ) AS null_percentage\n",
+        "        FROM\n",
+        "          policy_health\n",
+        "        UNION ALL\n",
+        "        SELECT\n",
+        "          ROUND(\n",
+        "            100.0\n",
+        "              * SUM(\n",
+        "                CASE\n",
+        "                  WHEN customer_id IS NULL THEN 1\n",
+        "                  ELSE 0\n",
+        "                END\n",
+        "              )\n",
+        "              / COUNT(*),\n",
+        "            2\n",
+        "          )\n",
+        "        FROM\n",
+        "          policy_health\n",
+        "        UNION ALL\n",
+        "        SELECT\n",
+        "          ROUND(\n",
+        "            100.0\n",
+        "              * SUM(\n",
+        "                CASE\n",
+        "                  WHEN agent_id IS NULL THEN 1\n",
+        "                  ELSE 0\n",
+        "                END\n",
+        "              )\n",
+        "              / COUNT(*),\n",
+        "            2\n",
+        "          )\n",
+        "        FROM\n",
+        "          policy_health\n",
+        "      )\n",
+        "  ) AS max_null_percentage"
+      ],
+      "catalog": "workspace",
+      "schema": "insurance_gold"
+    },
+    {
+      "name": "policy_status_dist",
+      "displayName": "Policy Status Distribution",
+      "queryLines": [
+        "SELECT\n",
+        "  policy_status,\n",
+        "  COUNT(*) AS policy_count,\n",
+        "  ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) AS percentage\n",
+        "FROM\n",
+        "  policy_health\n",
+        "WHERE\n",
+        "  policy_status IS NOT NULL\n",
+        "GROUP BY\n",
+        "  policy_status\n",
+        "ORDER BY\n",
+        "  policy_count DESC"
+      ],
+      "catalog": "workspace",
+      "schema": "insurance_gold"
+    }
+  ],
+  "pages": [
+    {
+      "name": "bd5d4c1d",
+      "displayName": "Page 1",
+      "layout": [
+        {
+          "widget": {
+            "name": "record_count_table",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "record_counts",
+                  "fields": [
+                    {
+                      "name": "table_name",
+                      "expression": "`table_name`"
+                    },
+                    {
+                      "name": "record_count",
+                      "expression": "`record_count`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Record Counts by Table"
+              },
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "table_name"
+                  },
+                  {
+                    "fieldName": "record_count"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 8,
+            "width": 6,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "freshness_table",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "data_freshness",
+                  "fields": [
+                    {
+                      "name": "source_table",
+                      "expression": "`source_table`"
+                    },
+                    {
+                      "name": "latest_date",
+                      "expression": "`latest_date`"
+                    },
+                    {
+                      "name": "days_since_update",
+                      "expression": "`days_since_update`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Data Freshness"
+              },
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "source_table"
+                  },
+                  {
+                    "fieldName": "latest_date"
+                  },
+                  {
+                    "fieldName": "days_since_update"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 8,
+            "width": 6,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "completeness_table",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "completeness_metrics",
+                  "fields": [
+                    {
+                      "name": "table_name",
+                      "expression": "`table_name`"
+                    },
+                    {
+                      "name": "field_name",
+                      "expression": "`field_name`"
+                    },
+                    {
+                      "name": "null_percentage",
+                      "expression": "`null_percentage`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Data Completeness - Null Percentages"
+              },
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "table_name"
+                  },
+                  {
+                    "fieldName": "field_name"
+                  },
+                  {
+                    "fieldName": "null_percentage"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 12,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "duplicate_bar",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "duplicate_detection",
+                  "fields": [
+                    {
+                      "name": "check_type",
+                      "expression": "`check_type`"
+                    },
+                    {
+                      "name": "sum(duplicate_count)",
+                      "expression": "SUM(`duplicate_count`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Duplicate Detection"
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "check_type",
+                  "displayName": "check_type",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(duplicate_count)",
+                  "displayName": "duplicate_count",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "check_type",
+                  "displayName": "check_type",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 12,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "value_quality_bar",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "value_quality",
+                  "fields": [
+                    {
+                      "name": "quality_issue",
+                      "expression": "`quality_issue`"
+                    },
+                    {
+                      "name": "sum(issue_count)",
+                      "expression": "SUM(`issue_count`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Value Quality Issues"
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "quality_issue",
+                  "displayName": "quality_issue",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(issue_count)",
+                  "displayName": "issue_count",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "quality_issue",
+                  "displayName": "quality_issue",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 17,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "premium_trend",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "daily_trends",
+                  "fields": [
+                    {
+                      "name": "payment_date",
+                      "expression": "`payment_date`"
+                    },
+                    {
+                      "name": "sum(total_premium_collected)",
+                      "expression": "SUM(`total_premium_collected`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Premium Collection Trend (Last 90 Days)"
+              },
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "payment_date",
+                  "displayName": "payment_date",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(total_premium_collected)",
+                  "displayName": "total_premium_collected",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "payment_date",
+                  "displayName": "payment_date",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 17,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "payment_trend",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "daily_trends",
+                  "fields": [
+                    {
+                      "name": "payment_date",
+                      "expression": "`payment_date`"
+                    },
+                    {
+                      "name": "sum(total_payments)",
+                      "expression": "SUM(`total_payments`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Payment Count Trend (Last 90 Days)"
+              },
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "payment_date",
+                  "displayName": "payment_date",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(total_payments)",
+                  "displayName": "total_payments",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "payment_date",
+                  "displayName": "payment_date",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 22,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "header",
+            "multilineTextboxSpec": {
+              "lines": [
+                "## Insurance Gold Layer - Data Quality Dashboard\n",
+                "\n",
+                "This dashboard monitors data quality metrics across all gold layer tables including completeness, freshness, duplicates, and value quality checks."
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "total_records_counter",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "summary_metrics",
+                  "fields": [
+                    {
+                      "name": "total_records",
+                      "expression": "`total_records`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Total Records",
+                  "fields": []
+                }
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "total_records",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 5,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "data_age_counter",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "summary_metrics",
+                  "fields": [
+                    {
+                      "name": "avg_data_age_days",
+                      "expression": "`avg_data_age_days`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Avg Data Age (Days)",
+                  "fields": []
+                }
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "avg_data_age_days",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 2,
+            "y": 5,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "duplicates_counter",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "summary_metrics",
+                  "fields": [
+                    {
+                      "name": "total_duplicates",
+                      "expression": "`total_duplicates`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Total Duplicates",
+                  "fields": []
+                }
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "total_duplicates",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 5,
+            "width": 4,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "quality_issues_counter",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "summary_metrics",
+                  "fields": [
+                    {
+                      "name": "total_quality_issues",
+                      "expression": "`total_quality_issues`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Total Quality Issues",
+                  "fields": []
+                }
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "total_quality_issues",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 5,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "max_null_counter",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "summary_metrics",
+                  "fields": [
+                    {
+                      "name": "max_null_percentage",
+                      "expression": "`max_null_percentage`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Max Null %",
+                  "fields": []
+                }
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "max_null_percentage",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 10,
+            "y": 5,
+            "width": 2,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "policy_status_pie",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "policy_status_dist",
+                  "fields": [
+                    {
+                      "name": "sum(policy_count)",
+                      "expression": "SUM(`policy_count`)"
+                    },
+                    {
+                      "name": "policy_status",
+                      "expression": "`policy_status`"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Policy Status Distribution"
+              },
+              "version": 3,
+              "widgetType": "pie",
+              "encodings": {
+                "angle": {
+                  "fieldName": "sum(policy_count)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "policy_status",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 27,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "policy_status_table",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "policy_status_dist",
+                  "fields": [
+                    {
+                      "name": "policy_status",
+                      "expression": "`policy_status`"
+                    },
+                    {
+                      "name": "policy_count",
+                      "expression": "`policy_count`"
+                    },
+                    {
+                      "name": "percentage",
+                      "expression": "`percentage`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "Policy Status Details",
+                  "fields": []
+                }
+              },
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "policy_status"
+                  },
+                  {
+                    "fieldName": "policy_count"
+                  },
+                  {
+                    "fieldName": "percentage"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 22,
+            "width": 6,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "key_findings",
+            "multilineTextboxSpec": {
+              "lines": [
+                "### 📊 Key Data Quality Findings\n",
+                "\n",
+                "**✅ Strengths:**\n",
+                "* Zero duplicate IDs across all tables\n",
+                "* 100% completeness - no null values in critical fields\n",
+                "* No negative premiums or outlier values\n",
+                "\n",
+                "**⚠️ Issues Identified:**\n",
+                "* **780 policies** have lowercase status values (\"active\", \"expired\") instead of expected title case (\"Active\", \"Expired\") - requires data standardization"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 12,
+            "height": 3
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "widgetHeaderAlignment": "ALIGNMENT_UNSPECIFIED"
+    },
+    "applyModeEnabled": false
+  }
+}
